@@ -1,0 +1,5 @@
+https://cses.fi/problemset/task/1629
+Interval scheduling. Pretty unintuitive greedy.
+
+https://cses.fi/problemset/task/1639
+Classic problem - Edit distance / Levenshtein distance
