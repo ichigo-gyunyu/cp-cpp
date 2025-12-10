@@ -44,83 +44,121 @@ template <typename T, typename... V> void LOG(const T &t, V&&... v) {LOG(t); if 
 #endif
 // clang-format on
 
-#include <concepts>
-#include <map>
-#include <optional>
-template <std::totally_ordered T> class IntervalSet {
-  private:
-    using Interval = std::pair<T, T>;
-    std::map<T, T> intervals_;
-    T total_length_ = 0;
-    auto Length_(const T l, const T r) const -> T { return r - l + 1; }
+void solve() {
+    ll n;
+    cin >> n;
+    vll a(n), b(n);
+    cin >> a >> b;
 
-  public:
-    /*
-     * Adds interval [l, r] to the interval set. Will merge touching/overlapping intervals.
-     */
-    void Add(T l, T r) {
-        auto it = intervals_.upper_bound(l);
+    ll ne = 0;
+    for (const auto e : a) {
+        if (e % 2 == 0) {
+            ne++;
+            if (ne >= 2)
+                break;
+        }
+    }
 
-        // if previous interval needs to be merged
-        if (it != intervals_.begin()) {
-            auto it_prev = std::prev(it);
-            if (it_prev->second >= l - 1) {
-                it = it_prev;
+    if (ne >= 2) {
+        cout << 0 << nl;
+        return;
+    }
+
+    vll oddbs;
+    unordered_set<ll> pfseen;
+    unordered_set<ll> evenpfs;
+    ll evena = 0, evenb = 0;
+    FOR(i, 0, n) {
+        if (a[i] % 2) {
+            oddbs.push_back(b[i]);
+            const auto& upfs = upf_map[a[i]];
+            for (const auto p : upfs) {
+                if (pfseen.contains(p)) {
+                    cout << 0 << nl;
+                    return;
+                }
+                pfseen.insert(p);
+            }
+        } else {
+            const auto& upfs = upf_map[a[i]];
+            for (const auto p : upfs) {
+                evenpfs.insert(p);
+            }
+            evena = a[i];
+            evenb = b[i];
+        }
+    }
+    vpll ab(n);
+    FOR(i, 0, n) { ab[i] = {b[i], a[i]}; }
+    ranges::sort(ab);
+    FOR(i, 0, n) {
+        b[i] = ab[i].first;
+        a[i] = ab[i].second;
+    }
+
+    auto times_poss = [&](ll x) {
+        // assert(x > 0);
+        unordered_set<ll> pfwo = pfseen;
+        const auto& upfx = upf_map[x];
+        for (const auto p : upfx) {
+            pfwo.erase(p);
+        }
+
+        ll ans = LINF;
+        for (const auto p : pfwo) {
+            ll thistimes = (x / p) * p + p - x;
+            if (thistimes < 0)
+                continue;
+            ans = min(ans, thistimes);
+        }
+        return ans;
+    };
+
+    ll ans = 0;
+    if (ne == 1) {
+        ranges::sort(oddbs);
+        for (const auto epf : evenpfs) {
+            if (pfseen.contains(epf)) {
+                cout << 0 << nl;
+                return;
             }
         }
-
-        T new_l = l, new_r = r;
-        while (it != intervals_.end() && it->first <= r + 1) {
-            new_l = std::min(new_l, it->first);
-            new_r = std::max(new_r, it->second);
-            total_length_ -= Length_(it->first, it->second);
-            it = intervals_.erase(it);
-        }
-        total_length_ += Length_(new_l, new_r);
-        intervals_[new_l] = new_r;
-    }
-
-    /*
-     * Returns the (merged) interval that fully covers [l, r], or std::nullopt if none exists
-     */
-    std::optional<Interval> CoveredBy(T l, T r) const {
-        auto it = intervals_.upper_bound(l);
-        if (it == intervals_.begin() || std::prev(it)->second < r) {
-            return std::nullopt;
-        }
-
-        it--;
-        return {it->first, it->second};
-    }
-
-    /*
-     * Check if [l, r] is fully covered by one or more intervals
-     */
-    bool Covers(T l, T r) const { return CoveredBy(l, r).has_value(); }
-
-    /*
-     * Returns the total length covered by all intervals
-     */
-    T TotalLength() const { return total_length_; }
-};
-void solve() {
-    ll n, q;
-    cin >> n >> q;
-    IntervalSet<ll> is;
-    while (q--) {
-        ll l, r;
-        cin >> l >> r;
-        is.Add(l, r);
-        ll ans = n - is.TotalLength();
+        ans = oddbs[0];
+        ll times = times_poss(evena);
+        if (times != LINF)
+            ans = min(ans, evenb * times);
         cout << ans << nl;
+        return;
     }
+
+    // no evens;
+    ans = b[0] + b[1];
+
+    FOR(i, 0, n) {
+        const auto& upfs0 = upf_map[a[i]];
+        const auto& upfs1 = upf_map[a[i] + 1];
+        for (const auto pf : upfs1) {
+            if (pfseen.contains(pf) && !upfs0.contains(pf)) {
+                ans = min(ans, b[i]);
+                break;
+            }
+        }
+    }
+
+    if (b[0] < b[1]) {
+        ll times = times_poss(a[0]);
+        if (times != LINF)
+            ans = min(ans, b[0] * times);
+    }
+
+    cout << ans << nl;
 }
 
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
