@@ -3,7 +3,7 @@
 class NT {
   public:
     static constexpr std::size_t MAXN = 300003;
-    // constexpr std::uint64_t MOD = 998244353;
+    // static constexpr std::uint64_t MOD = 998244353;
     static constexpr std::uint64_t MOD = 1000000007;
 
     template <std::size_t N, std::size_t MOD> static auto ComputeFactorialsMod() -> std::array<uint64_t, N> {

@@ -13,3 +13,9 @@ build:
 
 release:
 	g++ -std=c++23 -O3 -o out cf.cpp
+
+gen: gen.cpp
+	g++ -std=c++23 -O2 -o gen gen.cpp
+
+brute: brute.cpp
+	g++ -std=c++23 -O2 -o brute brute.cpp

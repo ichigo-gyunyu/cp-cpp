@@ -1,6 +1,6 @@
 #include "bits/stdc++.h"
-#include <cstdint>
 #include <numeric>
+#include <utility>
 
 using namespace std;
 
@@ -47,108 +47,14 @@ template <typename T, typename... V> void LOG(const T &t, V&&... v) {LOG(t); if 
 void solve() {
     ll n;
     cin >> n;
-    vll a(n), b(n);
-    cin >> a >> b;
-
-    ll ne = 0;
-    for (const auto e : a) {
-        if (e % 2 == 0) {
-            ne++;
-            if (ne >= 2)
-                break;
-        }
-    }
-
-    if (ne >= 2) {
-        cout << 0 << nl;
-        return;
-    }
-
-    vll oddbs;
-    unordered_set<ll> pfseen;
-    unordered_set<ll> evenpfs;
-    ll evena = 0, evenb = 0;
-    FOR(i, 0, n) {
-        if (a[i] % 2) {
-            oddbs.push_back(b[i]);
-            const auto& upfs = upf_map[a[i]];
-            for (const auto p : upfs) {
-                if (pfseen.contains(p)) {
-                    cout << 0 << nl;
-                    return;
-                }
-                pfseen.insert(p);
-            }
-        } else {
-            const auto& upfs = upf_map[a[i]];
-            for (const auto p : upfs) {
-                evenpfs.insert(p);
-            }
-            evena = a[i];
-            evenb = b[i];
-        }
-    }
-    vpll ab(n);
-    FOR(i, 0, n) { ab[i] = {b[i], a[i]}; }
-    ranges::sort(ab);
-    FOR(i, 0, n) {
-        b[i] = ab[i].first;
-        a[i] = ab[i].second;
-    }
-
-    auto times_poss = [&](ll x) {
-        // assert(x > 0);
-        unordered_set<ll> pfwo = pfseen;
-        const auto& upfx = upf_map[x];
-        for (const auto p : upfx) {
-            pfwo.erase(p);
-        }
-
-        ll ans = LINF;
-        for (const auto p : pfwo) {
-            ll thistimes = (x / p) * p + p - x;
-            if (thistimes < 0)
-                continue;
-            ans = min(ans, thistimes);
-        }
-        return ans;
-    };
-
+    vll a(n);
+    cin >> a;
+    vll seen(n + 1);
     ll ans = 0;
-    if (ne == 1) {
-        ranges::sort(oddbs);
-        for (const auto epf : evenpfs) {
-            if (pfseen.contains(epf)) {
-                cout << 0 << nl;
-                return;
-            }
-        }
-        ans = oddbs[0];
-        ll times = times_poss(evena);
-        if (times != LINF)
-            ans = min(ans, evenb * times);
-        cout << ans << nl;
-        return;
-    }
-
-    // no evens;
-    ans = b[0] + b[1];
-
-    FOR(i, 0, n) {
-        const auto& upfs0 = upf_map[a[i]];
-        const auto& upfs1 = upf_map[a[i] + 1];
-        for (const auto pf : upfs1) {
-            if (pfseen.contains(pf) && !upfs0.contains(pf)) {
-                ans = min(ans, b[i]);
-                break;
-            }
-        }
-    }
-
-    if (b[0] < b[1]) {
-        ll times = times_poss(a[0]);
-        if (times != LINF)
-            ans = min(ans, b[0] * times);
+    for (const auto e : a) {
+        if (!seen[e - 1])
+            ans++;
+        seen[e] = 1;
     }
 
     cout << ans << nl;
@@ -158,7 +64,7 @@ int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     int t = 1;
-    cin >> t;
+    // cin >> t;
     while (t--) {
         solve();
     }
