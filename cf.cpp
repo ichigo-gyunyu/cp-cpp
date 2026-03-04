@@ -1,6 +1,4 @@
 #include "bits/stdc++.h"
-#include <numeric>
-#include <utility>
 
 using namespace std;
 
@@ -47,14 +45,90 @@ template <typename T, typename... V> void LOG(const T &t, V&&... v) {LOG(t); if 
 void solve() {
     ll n;
     cin >> n;
-    vll a(n);
-    cin >> a;
-    vll seen(n + 1);
-    ll ans = 0;
-    for (const auto e : a) {
-        if (!seen[e - 1])
-            ans++;
-        seen[e] = 1;
+
+    Adj adj(n);
+    FOR(i, 0, n - 1) {
+        ll u, v;
+        cin >> u >> v;
+        u--, v--;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    vll par(n, -1);
+    function<void(ll, ll)> dfs_par = [&](ll u, ll p) {
+        par[u] = p;
+
+        for (const auto v : adj[u]) {
+            if (v == p)
+                continue;
+            dfs_par(v, u);
+        }
+    };
+    dfs_par(0, -1);
+
+    vvll dp(n, vll(3, -1));
+    function<void(ll, ll)> dfs = [&](ll u, ll p) {
+        DBG(u, p);
+        for (const auto v : adj[u]) {
+            if (v == p)
+                continue;
+            dfs(v, u);
+        }
+
+        if (adj[u].size() <= 2)
+            return;
+
+        ll mx1 = -1;
+        for (const auto v : adj[u]) {
+            if (v == p)
+                continue;
+            mx1 = max(mx1, dp[v][1]);
+        }
+        if (mx1 != -1) {
+            dp[u][0] = 1 + mx1;
+            DBG(u, mx1, dp[u][0]);
+            if (adj[u].size() > 3) {
+                dp[u][1] = 1 + mx1;
+            }
+        }
+
+        if (adj[u].size() > 3) {
+            vll mxs;
+            for (const auto v : adj[u]) {
+                if (v == p)
+                    continue;
+                if (dp[v][1] == -1)
+                    continue;
+                mxs.push_back(dp[v][1]);
+            }
+
+            if (mxs.size() > 1) {
+                ranges::sort(mxs);
+                ll m1 = mxs.back();
+                mxs.pop_back();
+                ll m2 = mxs.back();
+                mxs.pop_back();
+                dp[u][2] = 1 + m1 + m2;
+            }
+        }
+
+        DBG(u, adj[u].size());
+        if (adj[u].size() >= 2) {
+            dp[u][0] = max(dp[u][0], 1ll);
+        }
+        if (adj[u].size() >= 3) {
+            dp[u][1] = max(dp[u][1], 1ll);
+        }
+        DBG(u, dp[u][0], dp[u][1], dp[u][2]);
+    };
+    dfs(0, -1);
+
+    ll ans = 1;
+    FOR(i, 0, n) {
+        DBG(dp[i]);
+        ll mx = ranges::max(dp[i]);
+        ans = max(ans, mx);
     }
 
     cout << ans << nl;
@@ -64,7 +138,7 @@ int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }

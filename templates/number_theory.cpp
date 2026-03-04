@@ -2,7 +2,7 @@
 #include <cstdint>
 class NT {
   public:
-    static constexpr std::size_t MAXN = 300003;
+    static constexpr std::size_t MAXN = 3000003;
     // static constexpr std::uint64_t MOD = 998244353;
     static constexpr std::uint64_t MOD = 1000000007;
 
@@ -129,7 +129,7 @@ class NT {
         return upfs;
     }
 
-    static auto UniquePrimeFactors(uint64_t x, const std::array<uint64_t, MAXN>& spf) -> std::unordered_set<uint64_t> {
+    static auto UniquePrimeFactors(const uint64_t x, const std::array<uint64_t, MAXN>& spf) -> std::unordered_set<uint64_t> {
         return UniquePrimeFactors<MAXN>(x, spf);
     }
 
