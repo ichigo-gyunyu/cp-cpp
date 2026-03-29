@@ -1,7 +1,7 @@
 #include <concepts>
 #include <map>
 #include <optional>
-template <std::totally_ordered T> class IntervalSet {
+template <std::integral T> class IntervalSet {
   private:
     using Interval = std::pair<T, T>;
     std::map<T, T> intervals_;
@@ -33,6 +33,11 @@ template <std::totally_ordered T> class IntervalSet {
         total_length_ += Length_(new_l, new_r);
         intervals_[new_l] = new_r;
     }
+
+    /*
+     * Adds interval [l, r] to the interval set. Will merge touching/overlapping intervals.
+     */
+    void Add(const Interval &interval) { Add(interval.first, interval.second); }
 
     /*
      * Returns the (merged) interval that fully covers [l, r], or std::nullopt if none exists

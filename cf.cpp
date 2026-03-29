@@ -1,4 +1,5 @@
 #include "bits/stdc++.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ using namespace std;
 #define NO cout << "NO\n"
 #define Yes cout << "Yes\n"
 #define No cout << "No\n"
-#define LINF 1000000000000000007ll
+// #define LINF 1000000000000000007ll
 // #define INF 1000000007
 #define POW2(x) (1ll << (x))
 #define SLEEP(x) this_thread::sleep_for(chrono::seconds(x))
@@ -42,103 +43,75 @@ template <typename T, typename... V> void LOG(const T &t, V&&... v) {LOG(t); if 
 #endif
 // clang-format on
 
+const ll INF = 2e18;
+vector<vll> char_counts;
+
+ll solve(int n, ll k, int c_idx, const vll& fib, const string& X, const string& Y) {
+    if (k <= 0)
+        return 0;
+    if (n == 0) {
+        ll cnt = 0;
+        for (int i = 0; i < min((ll)X.length(), k); ++i) {
+            if (X[i] - 'a' == c_idx)
+                cnt++;
+        }
+
+        return cnt;
+    }
+    if (n == 1) {
+        ll cnt = 0;
+        for (int i = 0; i < min((ll)Y.length(), k); ++i) {
+            if (Y[i] - 'a' == c_idx)
+                cnt++;
+        }
+        return cnt;
+    }
+
+    if (k >= fib[n])
+        return char_counts[n][c_idx];
+
+    if (k <= fib[n - 1]) {
+        return solve(n - 1, k, c_idx, fib, X, Y);
+    } else {
+        return char_counts[n - 1][c_idx] + solve(n - 2, k - fib[n - 1], c_idx, fib, X, Y);
+    }
+}
+
 void solve() {
-    ll n;
-    cin >> n;
+    string x, y;
+    cin >> x >> y;
 
-    Adj adj(n);
-    FOR(i, 0, n - 1) {
-        ll u, v;
-        cin >> u >> v;
-        u--, v--;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
+    vll fib{(ll)x.length(), (ll)y.length()};
+    char_counts.assign(92, vll(26, 0));
+    for (char c : x)
+        char_counts[0][c - 'a']++n;
+    for (char c : y)
+        char_counts[1][c - 'a']++;
+
+    FOR(i, 0, 89) {
+        ll m = fib.size();
+        fib.push_back(min(INF, fib[m - 1] + fib[m - 2]));
+        FOR(j, 0, 26) { char_counts[m][j] = char_counts[m - 1][j] + char_counts[m - 2][j]; }
     }
 
-    vll par(n, -1);
-    function<void(ll, ll)> dfs_par = [&](ll u, ll p) {
-        par[u] = p;
+    int Q;
 
-        for (const auto v : adj[u]) {
-            if (v == p)
-                continue;
-            dfs_par(v, u);
-        }
-    };
-    dfs_par(0, -1);
-
-    vvll dp(n, vll(3, -1));
-    function<void(ll, ll)> dfs = [&](ll u, ll p) {
-        DBG(u, p);
-        for (const auto v : adj[u]) {
-            if (v == p)
-                continue;
-            dfs(v, u);
-        }
-
-        if (adj[u].size() <= 2)
-            return;
-
-        ll mx1 = -1;
-        for (const auto v : adj[u]) {
-            if (v == p)
-                continue;
-            mx1 = max(mx1, dp[v][1]);
-        }
-        if (mx1 != -1) {
-            dp[u][0] = 1 + mx1;
-            DBG(u, mx1, dp[u][0]);
-            if (adj[u].size() > 3) {
-                dp[u][1] = 1 + mx1;
-            }
-        }
-
-        if (adj[u].size() > 3) {
-            vll mxs;
-            for (const auto v : adj[u]) {
-                if (v == p)
-                    continue;
-                if (dp[v][1] == -1)
-                    continue;
-                mxs.push_back(dp[v][1]);
-            }
-
-            if (mxs.size() > 1) {
-                ranges::sort(mxs);
-                ll m1 = mxs.back();
-                mxs.pop_back();
-                ll m2 = mxs.back();
-                mxs.pop_back();
-                dp[u][2] = 1 + m1 + m2;
-            }
-        }
-
-        DBG(u, adj[u].size());
-        if (adj[u].size() >= 2) {
-            dp[u][0] = max(dp[u][0], 1ll);
-        }
-        if (adj[u].size() >= 3) {
-            dp[u][1] = max(dp[u][1], 1ll);
-        }
-        DBG(u, dp[u][0], dp[u][1], dp[u][2]);
-    };
-    dfs(0, -1);
-
-    ll ans = 1;
-    FOR(i, 0, n) {
-        DBG(dp[i]);
-        ll mx = ranges::max(dp[i]);
-        ans = max(ans, mx);
+    cin >> Q;
+    while (Q--) {
+        ll L, R;
+        char C;
+        cin >> L >> R >> C;
+        int ci = C - 'a';
+        int start_n = fib.size() - 1;
+        cout << solve(start_n, R, ci, fib, x, y) - solve(start_n, L - 1, ci, fib, x, y) << "\n";
     }
-
-    cout << ans << nl;
 }
 
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     int t = 1;
-    cin >> t;
+    // cin >> t;
     while (t--) {
         solve();
     }
