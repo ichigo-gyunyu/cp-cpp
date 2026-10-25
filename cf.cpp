@@ -1,5 +1,4 @@
 #include "bits/stdc++.h"
-#include <algorithm>
 
 using namespace std;
 
@@ -43,69 +42,7 @@ template <typename T, typename... V> void LOG(const T &t, V&&... v) {LOG(t); if 
 #endif
 // clang-format on
 
-const ll INF = 2e18;
-vector<vll> char_counts;
-
-ll solve(int n, ll k, int c_idx, const vll& fib, const string& X, const string& Y) {
-    if (k <= 0)
-        return 0;
-    if (n == 0) {
-        ll cnt = 0;
-        for (int i = 0; i < min((ll)X.length(), k); ++i) {
-            if (X[i] - 'a' == c_idx)
-                cnt++;
-        }
-
-        return cnt;
-    }
-    if (n == 1) {
-        ll cnt = 0;
-        for (int i = 0; i < min((ll)Y.length(), k); ++i) {
-            if (Y[i] - 'a' == c_idx)
-                cnt++;
-        }
-        return cnt;
-    }
-
-    if (k >= fib[n])
-        return char_counts[n][c_idx];
-
-    if (k <= fib[n - 1]) {
-        return solve(n - 1, k, c_idx, fib, X, Y);
-    } else {
-        return char_counts[n - 1][c_idx] + solve(n - 2, k - fib[n - 1], c_idx, fib, X, Y);
-    }
-}
-
-void solve() {
-    string x, y;
-    cin >> x >> y;
-
-    vll fib{(ll)x.length(), (ll)y.length()};
-    char_counts.assign(92, vll(26, 0));
-    for (char c : x)
-        char_counts[0][c - 'a']++n;
-    for (char c : y)
-        char_counts[1][c - 'a']++;
-
-    FOR(i, 0, 89) {
-        ll m = fib.size();
-        fib.push_back(min(INF, fib[m - 1] + fib[m - 2]));
-        FOR(j, 0, 26) { char_counts[m][j] = char_counts[m - 1][j] + char_counts[m - 2][j]; }
-    }
-
-    int Q;
-
-    cin >> Q;
-    while (Q--) {
-        ll L, R;
-        char C;
-        cin >> L >> R >> C;
-        int ci = C - 'a';
-        int start_n = fib.size() - 1;
-        cout << solve(start_n, R, ci, fib, x, y) - solve(start_n, L - 1, ci, fib, x, y) << "\n";
-    }
-}
+void solve() {}
 
 int main() {
     ios_base::sync_with_stdio(false);
